@@ -1,148 +1,209 @@
-# 股票模拟交易系统
+# NeuroTrade FGI Dashboard
 
-一个基于Flask的实时股票模拟交易应用，使用Alpha Vantage API获取真实的股票数据。
+A high-frequency interactive web dashboard that visualizes individual-stock Fear Index (FI_t) and Greed Index (GI_t) based on EMA momentum, order imbalance, and volatility.
 
-## 功能特性
+## 🧠 Features
 
-- 🏦 **虚拟资金**: 每个用户初始资金$100,000
-- 📈 **实时数据**: 使用Alpha Vantage API获取真实股票价格
-- 🔍 **股票搜索**: 支持标普500股票搜索和自动建议
-- 💰 **模拟交易**: 买入/卖出股票，实时计算收益
-- 📊 **投资组合**: 查看持仓详情和总收益
-- 📝 **交易历史**: 完整的交易记录
-- 📈 **分时图**: 平滑的价格走势线图（无点显示）
-- 📊 **成交量图**: 彩色柱状图显示成交量变化
-- 📊 **财务数据**: 显示EPS、ROE、ROA、ROI、PEG、P/E等财务比率
-- 🎨 **现代UI**: 响应式设计，美观易用
+- **Real-time Fear & Greed Index Calculation**
+  - Price Momentum (PM_t) based on short/long-term EMA
+  - Order Momentum (OM_t) from simulated buy-sell imbalance
+  - Volatility (Vol_t) from rolling standard deviation
+  - Fear Index (FI_t) and Greed Index (GI_t) using sigmoid functions
 
-## 支持的股票
+- **Interactive Visualizations**
+  - Stock price chart with EMA overlay (12-period and 26-period)
+  - Dual line chart for FI_t and GI_t with color-coded zones
+  - Real-time metrics panel showing all calculated values
+  - Emotion zone indicators (Fear/Greed/Neutral)
 
-应用支持标普500中的主要股票，包括：
-- 科技股：AAPL, MSFT, GOOGL, AMZN, TSLA, META, NVDA等
-- 金融股：JPM, V, MA, AXP, GS等
-- 医疗股：JNJ, PFE, ABT, TMO等
-- 消费股：WMT, HD, COST, PEP等
-- 工业股：CAT, BA, RTX, MMM等
+- **High-Frequency Data Simulation**
+  - Tick-by-tick data generation
+  - Configurable refresh intervals (1s, 10s, 1min)
+  - High-frequency mode toggle
 
-## 安装和运行
+- **Professional UI**
+  - Dark mode with neural-network inspired gradient background
+  - Smooth animations using Framer Motion
+  - Responsive design with Tailwind CSS
+  - Glass-morphism effects
 
-### 方法1：使用启动脚本（推荐）
+## 📊 Core Formulas
 
-1. 双击运行 `start.bat`
-2. 脚本会自动安装依赖并启动应用
-3. 在浏览器中访问 `http://localhost:5000`
+### Price Momentum
+```
+PM_t = (EMA_sp(t) - EMA_lp(t)) / EMA_lp(t)
+```
+where EMA_sp = 12-period EMA, EMA_lp = 26-period EMA
 
-### 方法2：手动安装
+### Order Momentum
+```
+OM_t = EMA_so(t) - EMA_lo(t)
+```
+where EMA_so/lo = short/long-term EMA of order imbalance
 
-1. 确保已安装Python 3.7或更高版本
-2. 安装依赖：
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. 启动应用：
-   ```bash
-   python app.py
-   ```
-4. 在浏览器中访问 `http://localhost:5000`
+### Volatility
+```
+Vol_t = rolling std dev of log returns (annualized)
+V_0 = mean(Vol_t)
+```
 
-## 使用说明
+### Fear & Greed Indices
+```
+FI_t = 100 * [1/(1+exp(k_p*PM_t))] * [1/(1+exp(k_o*OM_t))] * [1/(1+exp(-k_v*(Vol_t - V_0)))]
+GI_t = 100 * [1/(1+exp(-k_p*PM_t))] * [1/(1+exp(-k_o*OM_t))] * [1/(1+exp(k_v*(Vol_t - V_0)))]
+```
+Constants: k_p=2.5, k_o=2.0, k_v=1.5
 
-### 1. 用户注册/登录
-- 输入用户名即可自动注册或登录
-- 每个新用户自动获得$100,000虚拟资金
+### Emotion Zones
+- **FI_t > 70** → Fear Zone (Buy Signal)
+- **GI_t > 70** → Greed Zone (Sell Signal)
+- **Otherwise** → Neutral (Hold)
 
-### 2. 搜索股票
-- 在搜索框中输入股票代码（如：AAPL）
-- 系统会显示搜索建议
-- 点击搜索按钮获取实时价格
+## 🚀 Installation
 
-### 3. 进行交易
-- 选择要交易的股票
-- 输入交易数量
-- 点击"买入"或"卖出"按钮
-- 系统会实时更新您的投资组合
+### Prerequisites
+- Node.js 16+ and npm
+- Python 3.7+ (for Flask backend)
+- Flask backend running on port 5000
 
-### 4. 查看投资组合
-- 实时查看现金余额和股票持仓
-- 查看总收益和收益率
-- 查看每只股票的盈亏情况
+### Setup React App
 
-### 5. 图表分析
-- **分时图**: 平滑的价格走势线图，无点显示，更美观
-- **成交量图**: 彩色柱状图，绿色表示上涨，红色表示下跌
-- 基于5分钟间隔的实时数据
-- 支持最近24小时的价格和成交量变化
+1. Install dependencies:
+```bash
+npm install
+```
 
-### 6. 财务数据分析
-- 查看关键财务比率：
-  - **EPS** (每股收益)
-  - **P/E** (市盈率)
-  - **PEG** (PEG比率)
-  - **ROE** (净资产收益率)
-  - **ROA** (总资产收益率)
-  - **ROI** (投资回报率)
-- 查看公司基本信息（行业、市值、Beta系数等）
+2. Start the development server:
+```bash
+npm start
+```
 
-### 7. 交易历史
-- 查看所有历史交易记录
-- 包括交易时间、股票、数量、价格等信息
+The app will open at `http://localhost:3000`
 
-## API接口
+### Build for Production
 
-应用提供以下API接口：
+```bash
+npm run build
+```
 
-- `GET /api/stocks` - 获取股票列表
-- `GET /api/stocks/search/<query>` - 搜索股票
-- `GET /api/stock/<symbol>` - 获取股票价格
-- `GET /api/stock/<symbol>/financials` - 获取财务数据
-- `GET /api/stock/<symbol>/timeseries` - 获取时间序列数据
-- `POST /api/user/create` - 创建用户
-- `POST /api/user/login` - 用户登录
-- `POST /api/trade/buy` - 买入股票
-- `POST /api/trade/sell` - 卖出股票
-- `GET /api/portfolio` - 获取投资组合
-- `GET /api/transactions` - 获取交易历史
+This creates an optimized production build in the `build/` folder.
 
-## 技术栈
+## 📁 Project Structure
 
-- **后端**: Flask (Python)
-- **前端**: HTML5, CSS3, JavaScript, Bootstrap 5, Chart.js
-- **数据源**: Alpha Vantage API
-- **功能**: 实时数据、模拟交易、投资组合管理、分时图、财务分析
+```
+neurotrade-fgi-dashboard/
+├── public/
+│   └── index.html          # HTML template
+├── src/
+│   ├── components/
+│   │   ├── StockChart.jsx      # Stock price chart with EMA
+│   │   ├── FearGreedChart.jsx  # FI/GI dual chart
+│   │   └── SignalPanel.jsx    # Real-time metrics panel
+│   ├── api/
+│   │   └── fetchData.js        # API service for stock data
+│   ├── utils/
+│   │   └── fgiCalculator.js   # FGI calculation logic
+│   ├── App.jsx                # Main app component
+│   ├── index.js               # React entry point
+│   └── index.css              # Tailwind CSS styles
+├── package.json
+├── tailwind.config.js
+└── README_FGI.md
+```
 
-## 注意事项
+## 🎯 Usage
 
-1. **API限制**: Alpha Vantage免费版有API调用限制，请合理使用
-2. **数据延迟**: 免费版数据可能有15-20分钟延迟
-3. **市场时间**: 股票数据仅在市场开放时间更新
-4. **虚拟交易**: 这是模拟交易，不涉及真实资金
+1. **Enter Stock Ticker**: Type a stock symbol (e.g., TSLA, AAPL) in the ticker input
+2. **Select Refresh Interval**: Choose update frequency (1s, 10s, or 1min)
+3. **Toggle High-Frequency Mode**: Enable for tick-by-tick simulation
+4. **View Charts**: 
+   - Left: Stock price with EMA overlay
+   - Right: Fear & Greed Index over time
+5. **Monitor Signals**: Check the Signal Panel for emotion zones and trading signals
+6. **Export Data**: Click "Export CSV" to download data for offline analysis
 
-## 故障排除
+## 🔧 Configuration
 
-### 常见问题
+### API Endpoint
+Set the backend API URL in `.env`:
+```
+REACT_APP_API_URL=http://localhost:5000
+```
 
-1. **无法获取股票价格**
-   - 检查网络连接
-   - 确认股票代码正确
-   - 检查API调用限制
+### EMA Periods
+Default: Short=12, Long=26
+Modify in `App.jsx`:
+```jsx
+<StockChart data={stockData} shortPeriod={12} longPeriod={26} />
+```
 
-2. **应用无法启动**
-   - 确认Python版本（需要3.7+）
-   - 检查依赖是否正确安装
-   - 查看控制台错误信息
+### FGI Constants
+Modify in `src/utils/fgiCalculator.js`:
+```javascript
+const K_P = 2.5;  // Price momentum constant
+const K_O = 2.0;  // Order momentum constant
+const K_V = 1.5;  // Volatility constant
+```
 
-3. **交易失败**
-   - 检查余额是否充足
-   - 确认股票数量是否正确
-   - 检查是否已登录
+## 🎨 Customization
 
-## 开发信息
+### Theme Colors
+Edit `tailwind.config.js`:
+```javascript
+colors: {
+  'neural-blue': '#667eea',
+  'neural-purple': '#764ba2',
+  'fear-red': '#ef4444',
+  'greed-green': '#10b981',
+}
+```
 
-- **开发者**: AI Assistant
-- **版本**: 1.0.0
-- **最后更新**: 2024年
-- **许可证**: MIT
+### Chart Styles
+Modify components in `src/components/` to customize chart appearance.
 
-## 支持
+## 📈 Data Flow
 
-如有问题或建议，请查看控制台日志或联系开发者。
+1. User inputs ticker symbol
+2. Frontend fetches time series data from Flask backend
+3. Prices are extracted and passed to FGI calculator
+4. EMA, PM_t, OM_t, Vol_t are calculated
+5. FI_t and GI_t are computed using sigmoid functions
+6. Charts update with new data
+7. Signal panel displays current metrics and emotion zone
+
+## 🔬 Technical Details
+
+- **Framework**: React 18.2
+- **Charts**: Recharts 2.10
+- **Styling**: Tailwind CSS 3.4
+- **Animations**: Framer Motion 10.16
+- **HTTP Client**: Axios 1.6
+
+## 🐛 Troubleshooting
+
+### Charts not displaying
+- Ensure stock data has at least 26 data points
+- Check browser console for errors
+- Verify API endpoint is accessible
+
+### High-frequency mode not working
+- Check network tab for API calls
+- Ensure backend supports the endpoint
+- Try reducing refresh interval
+
+### FGI values seem incorrect
+- Verify data has sufficient history (26+ points)
+- Check EMA periods are appropriate for data frequency
+- Review calculation constants (K_P, K_O, K_V)
+
+## 📝 License
+
+MIT License
+
+## 🤝 Contributing
+
+Contributions welcome! Please open an issue or submit a pull request.
+
+## 📧 Support
+
+For issues or questions, please check the main project README or open an issue on GitHub.
